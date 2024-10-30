@@ -3,56 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eye Tracker with Teachable Machine</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
-    <style>
-        #webcam-container {
-            display: flex;
-            justify-content: center;
-        }
-        #label-container {
-            text-align: center;
-            margin-top: 10px;
-        }
-    </style>
+    <title>Eye Tracker</title>
 </head>
 <body>
-    <h1>Teachable Machine Image Model</h1>
+    <div>Teachable Machine Image Model</div>
     <button type="button" onclick="init()">Start</button>
     <div id="webcam-container"></div>
     <div id="label-container"></div>
-    
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
     <script type="text/javascript">
-        // The URL to your model folder
-        const URL = "./eye_tracking_data/"; // folder name
+        const URL = "Eye_tracking_data/"; // path to data
 
         let model, webcam, labelContainer, maxPredictions;
 
         async function init() {
-            const modelURL = URL + "model.json"; // Path to model.json
-            const metadataURL = URL + "metadata.json"; // Path to metadata.json
+            const modelURL = URL + "model.json";
+            const metadataURL = URL + "metadata.json";
 
-            // Load the model and metadata
             model = await tmImage.load(modelURL, metadataURL);
             maxPredictions = model.getTotalClasses();
 
-            const flip = true; // *Whether to flip the webcam TBD*
-            webcam = new tmImage.Webcam(200, 200, flip); // Width, height, flip
-            await webcam.setup(); // Request access to the webcam
+            const flip = true;
+            webcam = new tmImage.Webcam(200, 200, flip);
+            await webcam.setup();
             await webcam.play();
             window.requestAnimationFrame(loop);
 
-            // Append elements to the DOM
             document.getElementById("webcam-container").appendChild(webcam.canvas);
             labelContainer = document.getElementById("label-container");
-            for (let i = 0; i < maxPredictions; i++) { // For each class label
+            for (let i = 0; i < maxPredictions; i++) {
                 labelContainer.appendChild(document.createElement("div"));
             }
         }
 
         async function loop() {
-            webcam.update(); // Update the webcam frame
+            webcam.update();
             await predict();
             window.requestAnimationFrame(loop);
         }
