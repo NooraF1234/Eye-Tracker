@@ -4,32 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eye Tracker with Blink Detection</title>
+    <style>
+        #pointer {
+            position: absolute;
+            background: red;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: none; /* Initially hidden */
+        }
+    </style>
 </head>
 <body>
-    <div>Teachable Machine Eye Tracking Model</div>
+    <h1>Teachable Machine Eye Tracking Model</h1>
     <button type="button" onclick="init()">Start</button>
     <div id="webcam-container"></div>
     <div id="label-container"></div>
+    <div id="pointer"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <!-- Include TensorFlow.js and Teachable Machine -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image/dist/teachablemachine-image.min.js"></script>
     <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
 
-    <script type="text/javascript">
-        const URL = "Eye_tracking_data/";
+    <script>
         let model, webcam, labelContainer, maxPredictions;
-        let isBlinking = false; // For tracking blink status
+        let isBlinking = false; // To track blink status
 
-        // Initialize WebGazer for eye tracking
         async function init() {
-            const modelURL = URL + "model.json";
-            const metadataURL = URL + "metadata.json";
+            console.log("Initialization started...");
+            const modelURL = "Eye_tracking_data/model.json";
+            const metadataURL = "Eye_tracking_data/metadata.json";
 
             try {
+                // Load the model
                 model = await tmImage.load(modelURL, metadataURL);
+                console.log("Model loaded successfully.");
                 maxPredictions = model.getTotalClasses();
 
-                // Start Teachable Machine's webcam
+                // Setup webcam
                 const flip = true; 
                 webcam = new tmImage.Webcam(200, 200, flip); 
                 await webcam.setup();
@@ -43,34 +56,31 @@
                 }
 
                 // Start WebGazer
-                webgazer.setGazeListener((data, elapsedTime) => {
+                webgazer.setGazeListener((data) => {
                     if (data) {
-                        // Data.x and Data.y are the gaze coordinates
                         handleGaze(data.x, data.y);
                     }
                 }).begin();
 
-                console.log("Model loaded successfully and WebGazer initialized.");
+                console.log("WebGazer initialized.");
             } catch (error) {
                 console.error("Error loading model:", error);
             }
         }
 
-        // Loop to continuously predict using Teachable Machine model
         async function loop() {
             webcam.update();
             await predict();
             window.requestAnimationFrame(loop);
         }
 
-        // Prediction function to detect blinking
         async function predict() {
             const prediction = await model.predict(webcam.canvas);
             labelContainer.childNodes.forEach((node, index) => {
-                node.innerHTML = prediction[index].className + ": " + prediction[index].probability.toFixed(2);
+                node.innerHTML = `${prediction[index].className}: ${prediction[index].probability.toFixed(2)}`;
             });
 
-            // Detect blink based on the Teachable Machine output
+            // Detect blink based on the prediction
             const blinkPrediction = prediction.find(p => p.className === "Blink");
             if (blinkPrediction && blinkPrediction.probability > 0.8) {
                 if (!isBlinking) {
@@ -82,36 +92,20 @@
             }
         }
 
-        // Handle gaze movement across the screen
         function handleGaze(x, y) {
-            // Move a virtual pointer or element to follow gaze
             const pointer = document.getElementById("pointer");
-            if (!pointer) {
-                const newPointer = document.createElement("div");
-                newPointer.id = "pointer";
-                newPointer.style.position = "absolute";
-                newPointer.style.background = "red";
-                newPointer.style.width = "10px";
-                newPointer.style.height = "10px";
-                newPointer.style.borderRadius = "50%";
-                document.body.appendChild(newPointer);
-            }
-
-            document.getElementById("pointer").style.left = x + "px";
-            document.getElementById("pointer").style.top = y + "px";
+            pointer.style.left = x + "px";
+            pointer.style.top = y + "px";
+            pointer.style.display = "block"; // Show the pointer
         }
 
-        // Trigger a "click" action when blinking
         function triggerClick() {
             const pointer = document.getElementById("pointer");
-            if (pointer) {
-                const x = pointer.style.left;
-                const y = pointer.style.top;
-
-                console.log("Clicked at", x, y); // For debugging
-                alert(`Click at position (${x}, ${y})`);
-                // Here you could add code to open links, focus elements, or interact with UI
-            }
+            const x = parseInt(pointer.style.left);
+            const y = parseInt(pointer.style.top);
+            console.log("Clicked at", x, y); // For debugging
+            alert(`Click at position (${x}, ${y})`); // Simulated click
+            // Here you could add code to open links, focus elements, or interact with UI
         }
     </script>
 </body>
