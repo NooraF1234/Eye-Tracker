@@ -12,4 +12,3 @@ def send_eye_tracking_data(filename):
 
 if __name__ == '__main__':
     app.run(debug=True)
-
