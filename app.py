@@ -1,14 +1,10 @@
-from flask import Flask, send_from_directory
+from flask import Flask, render_template
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return send_from_directory('', 'index.html')
-
-@app.route('/Eye_tracking_data/<path:filename>')
-def send_eye_tracking_data(filename):
-    return send_from_directory('Eye_tracking_data', filename)
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
