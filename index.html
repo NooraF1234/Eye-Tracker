@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Eye Tracker</title>
   <style>
@@ -38,15 +39,17 @@
       font-size: 16px;
       cursor: pointer;
     }
-
+    /*
     #redDot {
       position: absolute;
       width: 20px;
       height: 20px;
       background-color: red;
       border-radius: 50%;
-      pointer-events: none;  /* Makes sure the red dot doesn't block interaction */
+      pointer-events: none;  
     }
+*/
+
   </style>
 </head>
 <body>
@@ -59,35 +62,104 @@
   <div id="redDot"></div> <!-- This will be your custom red dot -->
   
   <button id="startTrackingButton">Start Tracking</button>
+  <button id="recalibrateButton">Recalibrate</button>
+
 
   <script src="{{ url_for('static', filename='webgazer.js') }}"></script>
   <script>
-    // Initialize WebGazer
+
+    let calibrationPoints = [
+        { x: 100, y: 100 },  // Top-left
+        { x: window.innerWidth - 100, y: 100 },  // Top-right
+        { x: 100, y: window.innerHeight - 100 },  // Bottom-left
+        { x: window.innerWidth - 100, y: window.innerHeight - 100 },  // Bottom-right
+        { x: window.innerWidth / 2, y: window.innerHeight / 2 }  // Center
+        ];
+
+        let currentCalibrationPoint = 0;
+
+        function showCalibrationPoint() {
+        if (currentCalibrationPoint < calibrationPoints.length) {
+            let point = calibrationPoints[currentCalibrationPoint];
+            let dot = document.createElement('div');
+            dot.style.position = 'absolute';
+            dot.style.left = point.x + 'px';
+            dot.style.top = point.y + 'px';
+            dot.style.width = '20px';
+            dot.style.height = '20px';
+            dot.style.backgroundColor = 'blue';
+            dot.style.borderRadius = '50%';
+            document.body.appendChild(dot);
+
+            dot.onclick = function() {
+            document.body.removeChild(dot);
+            currentCalibrationPoint++;
+            if (currentCalibrationPoint < calibrationPoints.length) {
+                showCalibrationPoint();
+            } else {
+                alert("Calibration complete!");
+                // Start tracking after calibration is complete
+                webgazer.begin();
+            }
+        };
+    }
+}
+
+
+
+    // Declare variables
+    let redDot;
+    let isTracking = false;
+
     window.onload = function() {
-      webgazer.setRegression('ridge')  // Choose regression type
-             .setGazeListener(function(data, elapsedTime) {
-                if (data == null) {
-                  return;
-                }
-                var x = data.x; // X-coordinate of gaze point
-                var y = data.y; // Y-coordinate of gaze point
+      redDot = document.getElementById("redDot"); // Get the red dot element
 
-                // Move the red dot to the gaze position
-                var redDot = document.getElementById("redDot");
-                redDot.style.left = (x - 10) + "px";  // Subtract 10 to center the dot
-                redDot.style.top = (y - 10) + "px";   // Subtract 10 to center the dot
-             })
-             .begin();
-
-      // Disable WebGazer's default drawing of the gaze point
-      webgazer.setDraw(false); 
-
-      // Start Tracking button functionality
+      // Set up the startTrackingButton click event handler
       document.getElementById("startTrackingButton").onclick = function() {
-        webgazer.begin(); // Start gaze tracking
-        this.disabled = true; // Disable the button after clicking
-      };
+        // Ensure WebGazer is not already tracking
+        if (isTracking) return;
+
+        // Disable the button to prevent multiple clicks
+        this.disabled = true;
+
+        // Initialize WebGazer
+        webgazer.setRegression('ridge') // Choose regression type
+                .setGazeListener(function(data, elapsedTime) {
+                  if (data == null) return;
+
+                  // Get X and Y coordinates of the gaze point
+                  var x = data.x;
+                  var y = data.y;
+
+                  // Move the red dot to the gaze position
+                  //redDot.style.left = (x - 10) + "px";  // Subtract 10 to center the dot
+                  //redDot.style.top = (y - 10) + "px";   // Subtract 10 to center the dot
+                })
+                .begin();
+
+        // Disable WebGazer's default drawing of the gaze point (important!)
+        webgazer.setDraw(false); 
+
+        // Set the tracking state to true
+        isTracking = true;
+      }
     };
+// Set up the recalibrateButton click event handler
+    document.getElementById("recalibrateButton").onclick = function() {
+  // Stop current tracking
+    webgazer.end();
+  
+  // Clear WebGazer's previous data (this resets the model)
+    webgazer.clearData();
+  
+  // Re-enable the Start button and reset the tracking state
+    document.getElementById("startTrackingButton").disabled = false;
+    isTracking = false;
+  
+  // Optionally, you can add instructions here to guide the user through the recalibration
+    alert("Recalibration complete! Click 'Start Tracking' to begin again.");
+    };
+
   </script>
 </body>
 </html>
