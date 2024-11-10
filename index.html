@@ -1,54 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eye Tracker</title>
-    <script src="https://cdn.jsdelivr.net/npm/webgazer@2.0.0/dist/webgazer.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eye Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      margin: 0;
+      height: 100vh;
+      background-color: #f0f0f0;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    #webgazerCanvas {
+      margin-top: 20px;
+      border: 2px solid #000;
+    }
+
+    #webgazer-canvas-container {
+      position: relative;
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #redDot {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background-color: red;
+      border-radius: 50%;
+      pointer-events: none;  /* Makes sure the red dot doesn't block interaction */
+    }
+  </style>
 </head>
 <body>
-    <h1>Eye Tracking Project</h1>
-    <button id="startButton">Start Tracking</button>
+  <h1>Eye Tracker</h1>
+  
+  <div id="webgazer-canvas-container">
+    <!-- Webgazer canvas will be placed here dynamically -->
+  </div>
 
-    <script>
-        // Start WebGazer
-        function startTracking() {
-            webgazer.setGazeListener(function(data, elapsedTime) {
-                if (data == null) return;
+  <div id="redDot"></div> <!-- This will be your custom red dot -->
+  
+  <button id="startTrackingButton">Start Tracking</button>
 
-                // Get gaze position
-                let x = data.x;
-                let y = data.y;
-
-                // Move a dot to the eye gaze position
-                const dot = document.getElementById("gazeDot");
-                dot.style.left = x + 'px';
-                dot.style.top = y + 'px';
-                
-                // Trigger click action on blink (example)
-                if (isBlinkDetected()) {
-                    triggerClickAction();
+  <script src="{{ url_for('static', filename='webgazer.js') }}"></script>
+  <script>
+    // Initialize WebGazer
+    window.onload = function() {
+      webgazer.setRegression('ridge')  // Choose regression type
+             .setGazeListener(function(data, elapsedTime) {
+                if (data == null) {
+                  return;
                 }
-            }).begin();
-        }
+                var x = data.x; // X-coordinate of gaze point
+                var y = data.y; // Y-coordinate of gaze point
 
-        // Detect a blink (simplified logic)
-        function isBlinkDetected() {
-            return Math.random() < 0.1; // Simulating a random blink detection for now
-        }
+                // Move the red dot to the gaze position
+                var redDot = document.getElementById("redDot");
+                redDot.style.left = (x - 10) + "px";  // Subtract 10 to center the dot
+                redDot.style.top = (y - 10) + "px";   // Subtract 10 to center the dot
+             })
+             .begin();
 
-        // Trigger a click on blink detection (this is just an example)
-        function triggerClickAction() {
-            // Open a website, or you can trigger anything you like
-            window.location.href = 'https://www.spotify.com'; // Example action
-        }
+      // Disable WebGazer's default drawing of the gaze point
+      webgazer.setDraw(false); 
 
-        // Button click to start tracking
-        document.getElementById("startButton").addEventListener('click', function() {
-            startTracking();
-        });
-    </script>
-
-    <div id="gazeDot" style="position: absolute; width: 10px; height: 10px; background-color: red; border-radius: 50%;"></div>
+      // Start Tracking button functionality
+      document.getElementById("startTrackingButton").onclick = function() {
+        webgazer.begin(); // Start gaze tracking
+        this.disabled = true; // Disable the button after clicking
+      };
+    };
+  </script>
 </body>
 </html>
