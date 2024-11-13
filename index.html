@@ -6,6 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Eye Tracker</title>
   <style>
+
+  .calibration-dot {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background-color: blue;
+    border-radius: 50%;
+    z-index: 10;
+  }
+
     body {
       font-family: Arial, sans-serif;
       display: flex;
@@ -60,6 +70,14 @@
   </div>
 
   <div id="redDot"></div> <!-- This will be your custom red dot -->
+  <div class="calibration-dot" style="top: 10%; left: 10%;"></div>
+  <div class="calibration-dot" style="top: 10%; left: 50%;"></div>
+  <div class="calibration-dot" style="top: 10%; left: 90%;"></div>
+  <div class="calibration-dot" style="top: 50%; left: 10%;"></div>
+  <div class="calibration-dot" style="top: 50%; left: 90%;"></div>
+  <div class="calibration-dot" style="top: 90%; left: 10%;"></div>
+  <div class="calibration-dot" style="top: 90%; left: 50%;"></div>
+  <div class="calibration-dot" style="top: 90%; left: 90%;"></div>
   
   <button id="startTrackingButton">Start Tracking</button>
   <button id="recalibrateButton">Recalibrate</button>
@@ -67,6 +85,16 @@
 
   <script src="{{ url_for('static', filename='webgazer.js') }}"></script>
   <script>
+  document.querySelectorAll('.calibration-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+      // Record calibration point and hide the dot after click
+      dot.style.backgroundColor = 'green'; // Change color to indicate activation
+      dot.style.opacity = 0.5;             // Dims the dot
+      // You can add your calibration logic here
+    });
+  });
+
+
 
     let calibrationPoints = [
         { x: 100, y: 100 },  // Top-left
@@ -74,34 +102,35 @@
         { x: 100, y: window.innerHeight - 100 },  // Bottom-left
         { x: window.innerWidth - 100, y: window.innerHeight - 100 },  // Bottom-right
         { x: window.innerWidth / 2, y: window.innerHeight / 2 }  // Center
-        ];
+      ];
 
-        let currentCalibrationPoint = 0;
+      let currentCalibrationPoint = 0;
 
-        function showCalibrationPoint() {
-        if (currentCalibrationPoint < calibrationPoints.length) {
-            let point = calibrationPoints[currentCalibrationPoint];
-            let dot = document.createElement('div');
-            dot.style.position = 'absolute';
-            dot.style.left = point.x + 'px';
-            dot.style.top = point.y + 'px';
-            dot.style.width = '20px';
-            dot.style.height = '20px';
-            dot.style.backgroundColor = 'blue';
-            dot.style.borderRadius = '50%';
-            document.body.appendChild(dot);
+      function showCalibrationPoint() {
+      if (currentCalibrationPoint < calibrationPoints.length) {
+          let point = calibrationPoints[currentCalibrationPoint];
+          let dot = document.createElement('div');
+          dot.style.position = 'absolute';
+          dot.style.left = point.x + 'px';
+          dot.style.top = point.y + 'px';
+          dot.style.width = '20px';
+          dot.style.height = '20px';
+          dot.style.backgroundColor = 'blue';
+          dot.style.borderRadius = '50%';
+          document.body.appendChild(dot);
 
-            dot.onclick = function() {
-            document.body.removeChild(dot);
-            currentCalibrationPoint++;
-            if (currentCalibrationPoint < calibrationPoints.length) {
-                showCalibrationPoint();
-            } else {
-                alert("Calibration complete!");
-                // Start tracking after calibration is complete
-                webgazer.begin();
-            }
-        };
+          dot.onclick = function() {
+          document.body.removeChild(dot);
+          currentCalibrationPoint++;
+          if (currentCalibrationPoint < calibrationPoints.length) {
+            showCalibrationPoint();
+          } 
+          else {
+            alert("Calibration complete!");
+            // Start tracking after calibration is complete
+            webgazer.begin();
+          }
+      };
     }
 }
 
@@ -110,6 +139,7 @@
     // Declare variables
     let redDot;
     let isTracking = false;
+    
 
     window.onload = function() {
       redDot = document.getElementById("redDot"); // Get the red dot element
