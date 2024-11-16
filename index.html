@@ -152,7 +152,7 @@
 
   // Define a variable to track how long the user is looking at the button
   let gazeTimer = {};
-  const gazeDuration = 3000; // 3 seconds to activate the button
+  const gazeDuration = 800; // <1 seconds to activate the button
 
   // Function to start the gaze timer
   function startGazeTimer(buttonId) {
@@ -227,10 +227,10 @@
         })
         .begin();
 
-      // Disable WebGazer's default drawing of the gaze point (important!)
+      // Disable WebGazer's default drawing of the gaze point
       webgazer.setDraw(false);
 
-      // Set the tracking state to true
+      // tracking state is true
       isTracking = true;
     };
   };
