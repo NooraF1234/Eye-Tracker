@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eye Tracker</title>
+  <title>GazeNavigatorAI</title>
   <style>
 
   .calibration-dot {
@@ -58,12 +58,26 @@
       border-radius: 50%;
       pointer-events: none;  
     }
-*/
+    */
+    .app-button {
+      margin: 10px;
+      padding: 15px 25px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    .app-button:hover{
+      background-color: #0056b3
+    }
 
   </style>
 </head>
 <body>
-  <h1>Eye Tracker</h1>
+  <h1>GazeNavigatorAI</h1>
   
   <div id="webgazer-canvas-container">
     <!-- Webgazer canvas will be placed here dynamically -->
@@ -81,6 +95,14 @@
   
   <button id="startTrackingButton">Start Tracking</button>
   <button id="recalibrateButton">Recalibrate</button>
+
+  <div>
+    <!-- Application buttons -->
+    <button class="app-button" id="openSpotify">Open Spotify</button>
+    <button class="app-button" id="openBrowser">Open Browser</button>
+    <button class="app-button" id="openCalculator">Open Calculator</button>
+  </div>
+
 
 
   <script src="{{ url_for('static', filename='webgazer.js') }}"></script>
